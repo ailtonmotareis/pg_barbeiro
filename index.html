@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Os Malas Studio — corte e barba com hora marcada</title>
+<meta name="theme-color" content="#0a1013">
+<link rel="icon" type="image/png" href="img/logo-sm.png">
+<meta name="description" content="Os Malas Studio: corte e barba com hora marcada. Escolha o serviço, o dia e o horário e agende pelo site.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header><div class="wrap"><a class="logo" href="#" aria-label="Os Malas Studio"><img src="img/logo-sm.png" alt="" width="44" height="44"><span>Os Malas <em>Studio</em></span></a><nav class="links" aria-label="Seções do site"><a href="#cortes">Cortes</a><a href="#servicos">Serviços</a><a href="#contato">Contato</a></nav><a class="nav-cta" href="#agendar">Agendar</a></div></header>
+
+<main>
+<div class="hero" id="top">
+ <div class="bg" aria-hidden="true" style="background-image:url(img/poster.jpg)"></div>
+ <div class="media"><video id="v" src="video/akitas.mp4" muted playsinline preload="auto" poster="img/poster.jpg" aria-label="Barbeiro do Os Malas Studio cortando o cabelo de um cliente"></video></div>
+ <div class="copy wrap">
+  <img class="crest" src="img/logo.jpg" alt="Logo do Os Malas Studio: crocodilo de braços cruzados em um escudo de metal com raios turquesa" width="900" height="900">
+  <h1><span class="w1">Os Malas</span><span class="w2">Studio</span></h1>
+  <p>Corte e barba feitos com calma, com hora marcada. Escolha o horário e venha.</p>
+  <div class="btns"><a class="btn" href="#agendar">Agendar meu horário</a><a class="btn ghost" href="#servicos">Ver serviços e preços</a></div>
+ </div>
+ <button class="start" id="start" type="button" hidden>Toque para começar</button>
+ <button class="skip" id="skip" type="button">Pular vídeo</button>
+ <div class="prog" id="prog"></div>
+</div>
+
+<section id="cortes" class="dark"><div class="wrap cgrid">
+ <div>
+  <h2>Nossos cortes</h2>
+  <p class="lead">Arraste para os lados e controle o vídeo: para a direita avança, para a esquerda volta. Toque nas miniaturas para ver os outros cortes.</p>
+ </div>
+ <div class="cui">
+  <div class="scrub" id="scrub" tabindex="0" role="slider" aria-label="Arraste para os lados para girar o corte" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+   <video id="cv" muted playsinline preload="none" disablepictureinpicture aria-hidden="true"></video>
+   <div class="hint" id="hint" aria-hidden="true"><span>‹</span>Arraste<span>›</span></div>
+   <div class="track"><i id="bar"></i></div>
+  </div>
+  <div class="cap"><button class="arr" id="prev" type="button" aria-label="Corte anterior">‹</button><strong id="cn" aria-live="polite"></strong><button class="arr" id="next" type="button" aria-label="Próximo corte">›</button></div>
+  <div class="thumbs" id="th"></div>
+ </div>
+</div></section>
+
+<section id="servicos" class="light"><div class="wrap sgrid">
+ <div class="sleft">
+  <h2>Serviços</h2>
+  <p class="lead">Valores por atendimento. Escolha um e seguimos direto para o agendamento.</p>
+  <div class="croc" id="croc" aria-hidden="true"><video id="crocw" class="cw" src="video/croc.webm" muted playsinline preload="none" tabindex="-1"></video><canvas id="crocc"></canvas><video id="crocv" src="video/croc.mp4" muted playsinline preload="none" tabindex="-1" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none"></video></div>
+ </div>
+ <ul class="services">
+  <li><div><strong>Corte</strong><small>Máquina ou tesoura, finalizado com navalha · 40 min</small></div><span class="price">R$ 50</span><button class="mini" data-s="Corte">Agendar</button></li>
+  <li><div><strong>Barba</strong><small>Toalha quente, navalha e hidratação · 30 min</small></div><span class="price">R$ 40</span><button class="mini" data-s="Barba">Agendar</button></li>
+  <li><div><strong>Corte + barba</strong><small>O combo completo · 1h10</small></div><span class="price">R$ 80</span><button class="mini" data-s="Corte + barba">Agendar</button></li>
+  <li><div><strong>Acabamento</strong><small>Pezinho, contorno e sobrancelha · 15 min</small></div><span class="price">R$ 20</span><button class="mini" data-s="Acabamento">Agendar</button></li>
+ </ul>
+</div></section>
+
+<section id="agendar" class="book"><div class="wrap grid">
+ <div>
+  <h2>Agende seu corte</h2>
+  <p class="lead">Escolha o serviço, o dia e o horário. Ao enviar, abrimos o WhatsApp da barbearia com o pedido pronto para confirmar.</p>
+ </div>
+ <form id="f" novalidate>
+  <fieldset><legend>1. Serviço</legend>
+   <div class="opts" id="svc"></div></fieldset>
+  <fieldset><legend>2. Dia</legend>
+   <input type="date" id="d" aria-label="Dia do atendimento"><p class="msg" id="dm"></p></fieldset>
+  <fieldset><legend>3. Horário</legend>
+   <div class="slots" id="sl"></div><p class="msg" id="sm">Escolha um dia para ver os horários.</p></fieldset>
+  <fieldset><legend>4. Seus dados</legend>
+   <div class="row"><div><label class="l" for="n">Nome</label><input type="text" id="n" autocomplete="name"></div>
+   <div><label class="l" for="t">Telefone</label><input type="tel" id="t" autocomplete="tel" placeholder="(11) 90000-0000"></div></div></fieldset>
+  <button class="btn" type="submit">Enviar pedido de agendamento</button>
+  <p class="msg err" id="e" role="alert"></p>
+  <div class="ok" id="ok" hidden></div>
+ </form>
+</div></section>
+</main>
+
+<footer id="contato"><div class="wrap">
+ <div class="brand"><img src="img/logo-sm.png" alt="" width="56" height="56"><span>Os Malas <em>Studio</em></span></div>
+ <div class="info">
+  <div><h3>Horário</h3><p>Ter a sex: 9h às 20h<br>Sábado: 9h às 17h<br>Domingo e segunda: fechado</p></div>
+  <div><h3>Endereço</h3><p>Rua Exemplo, 123<br>São Paulo, SP</p></div>
+  <div><h3>Contato</h3><p>WhatsApp (11) 97869-8668<br>@akitasbarbearia</p></div>
+ </div>
+ <p class="copyr">© 2026 Os Malas Studio</p>
+</div></footer>
+
+<script src="script.js"></script>
+</body>
+</html>

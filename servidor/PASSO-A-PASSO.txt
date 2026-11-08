@@ -1,0 +1,14 @@
+Como ativar a agenda compartilhada (leva uns 5 minutos, gratuito)
+
+1. Acesse sheets.google.com e crie uma planilha nova (nome: Agenda Os Malas).
+2. Menu Extensoes > Apps Script. Apague o que estiver la e cole o conteudo de Code.gs. Salve.
+3. Clique em Implantar > Nova implantacao > tipo "App da Web".
+   - Executar como: Eu
+   - Quem pode acessar: Qualquer pessoa
+   Clique em Implantar e autorize o acesso quando o Google pedir.
+4. Copie a URL que termina em /exec.
+5. Abra o script.js do site, ache a linha  const API="";  e cole a URL entre as aspas.
+6. Publique o site. Pronto: cada agendamento aparece na aba "Agendamentos" da planilha e o horario some para os outros clientes.
+
+Se mudar o Code.gs depois, use Implantar > Gerenciar implantacoes > editar > nova versao.
+Sem a URL, o site funciona em modo teste: os horarios so ficam salvos no proprio aparelho.
