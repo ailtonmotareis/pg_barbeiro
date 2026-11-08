@@ -13,14 +13,14 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header><div class="wrap"><a class="logo" href="#" aria-label="Os Malas Studio"><img src="img/logo-sm.png" alt="" width="44" height="44"><span>Os Malas <em>Studio</em></span></a><nav class="links" aria-label="Seções do site"><a href="#cortes">Cortes</a><a href="#servicos">Serviços</a><a href="#contato">Contato</a></nav><a class="nav-cta" href="#agendar">Agendar</a></div></header>
+<header><div class="wrap"><a class="logo" href="#" aria-label="Os Malas Studio"><span>Os Malas <em>Studio</em></span></a><nav class="links" aria-label="Seções do site"><a href="#cortes">Cortes</a><a href="#servicos">Serviços</a><a href="#contato">Contato</a></nav><a class="nav-cta" href="#agendar">Agendar</a></div></header>
 
 <main>
 <div class="hero" id="top">
  <div class="bg" aria-hidden="true" style="background-image:url(img/poster.jpg)"></div>
  <div class="media"><video id="v" src="video/akitas.mp4" muted playsinline preload="auto" poster="img/poster.jpg" aria-label="Barbeiro do Os Malas Studio cortando o cabelo de um cliente"></video></div>
  <div class="copy wrap">
-  <img class="crest" src="img/logo.jpg" alt="Logo do Os Malas Studio: crocodilo de braços cruzados em um escudo de metal com raios turquesa" width="900" height="900">
+  <span class="eyebrow">Barbearia · São Paulo</span>
   <h1><span class="w1">Os Malas</span><span class="w2">Studio</span></h1>
   <p>Corte e barba feitos com calma, com hora marcada. Escolha o horário e venha.</p>
   <div class="btns"><a class="btn" href="#agendar">Agendar meu horário</a><a class="btn ghost" href="#servicos">Ver serviços e preços</a></div>
@@ -52,7 +52,7 @@
   <p class="lead">Valores por atendimento. Escolha um e seguimos direto para o agendamento.</p>
   <div class="croc" id="croc" aria-hidden="true"><video id="crocw" class="cw" src="video/croc.webm" muted playsinline preload="none" tabindex="-1"></video><canvas id="crocc"></canvas><video id="crocv" src="video/croc.mp4" muted playsinline preload="none" tabindex="-1" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none"></video></div>
  </div>
- <ul class="services">
+ <ul class="services reveal">
   <li><div><strong>Corte</strong><small>Máquina ou tesoura, finalizado com navalha · 40 min</small></div><span class="price">R$ 50</span><button class="mini" data-s="Corte">Agendar</button></li>
   <li><div><strong>Barba</strong><small>Toalha quente, navalha e hidratação · 30 min</small></div><span class="price">R$ 40</span><button class="mini" data-s="Barba">Agendar</button></li>
   <li><div><strong>Corte + barba</strong><small>O combo completo · 1h10</small></div><span class="price">R$ 80</span><button class="mini" data-s="Corte + barba">Agendar</button></li>
@@ -65,7 +65,7 @@
   <h2>Agende seu corte</h2>
   <p class="lead">Escolha o serviço, o dia e o horário. Ao enviar, abrimos o WhatsApp da barbearia com o pedido pronto para confirmar.</p>
  </div>
- <form id="f" novalidate>
+ <form id="f" class="reveal" novalidate>
   <fieldset><legend>1. Serviço</legend>
    <div class="opts" id="svc"></div></fieldset>
   <fieldset><legend>2. Dia</legend>

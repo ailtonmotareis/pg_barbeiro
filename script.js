@@ -236,3 +236,12 @@ if("IntersectionObserver"in window){
  new IntersectionObserver((en,o)=>{if(en[0].isIntersecting){o.disconnect();go()}},{threshold:.6}).observe(stage);
 }else go();
 })();
+
+/* ===== Revelar blocos ao rolar ===== */
+(()=>{
+const els=document.querySelectorAll(".reveal,section h2,section .lead");
+els.forEach(e=>e.classList.add("reveal"));
+if(!("IntersectionObserver"in window)){els.forEach(e=>e.classList.add("in"));return}
+const io=new IntersectionObserver(en=>en.forEach(x=>{if(x.isIntersecting){x.target.classList.add("in");io.unobserve(x.target)}}),{threshold:.12,rootMargin:"0px 0px -6% 0px"});
+els.forEach(e=>io.observe(e));
+})();

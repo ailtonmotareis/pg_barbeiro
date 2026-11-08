@@ -216,3 +216,57 @@ header.solid{background:rgba(8,13,16,.9);border-bottom-color:rgba(47,240,220,.25
 .croc::after{content:"";position:absolute;left:var(--gx,50%);bottom:-6px;width:var(--gw,220px);height:26px;transform:translateX(-50%) scale(.6);opacity:0;border-radius:50%;background:radial-gradient(closest-side,rgba(47,240,220,.4),rgba(47,240,220,.12) 55%,transparent);transition:opacity .9s,transform .9s}
 .croc.arrived::after{opacity:1;transform:translateX(-50%) scale(1)}
 @media(prefers-reduced-motion:reduce){.croc::after{transition:none}}
+
+/* ===== v5: acabamento final ===== */
+::selection{background:var(--teal);color:#021311}
+body{font-size:17px;letter-spacing:.005em;-webkit-font-smoothing:antialiased}
+.logo{font-size:26px;letter-spacing:.09em}
+.logo span{background:var(--chrome);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 2px 6px rgba(0,0,0,.7))}
+.logo em{-webkit-text-fill-color:var(--teal);text-shadow:0 0 16px rgba(47,240,220,.6)}
+.links a{position:relative}
+.links a::after{content:"";position:absolute;left:12px;right:12px;bottom:3px;height:2px;background:var(--teal);box-shadow:0 0 10px var(--teal);transform:scaleX(0);transition:transform .3s}
+.links a:hover::after,.links a[aria-current="true"]::after{transform:scaleX(1)}
+.eyebrow{display:inline-flex;align-items:center;gap:12px;font:600 13px/1 var(--b);letter-spacing:.28em;text-transform:uppercase;color:var(--teal);text-shadow:0 0 18px rgba(47,240,220,.5)}
+.eyebrow::before{content:"";width:36px;height:2px;background:var(--teal);box-shadow:0 0 12px var(--teal)}
+.copy{padding-bottom:calc(72px + env(safe-area-inset-bottom,0px));gap:12px}
+.copy h1{font-size:clamp(64px,15vw,148px);line-height:.88;margin:4px 0 10px;filter:drop-shadow(0 6px 24px rgba(0,0,0,.65))}
+.copy h1 .w1{filter:drop-shadow(0 2px 0 rgba(0,0,0,.6)) drop-shadow(0 0 22px rgba(47,240,220,.35))}
+.copy h1 .w2{letter-spacing:.14em;font-size:.62em}
+.copy p{font-size:20px;color:#e3eeec;text-shadow:0 2px 14px rgba(0,0,0,.7)}
+.hero::after{background:linear-gradient(0deg,#080d10 0%,rgba(8,13,16,.72) 38%,transparent 78%),linear-gradient(180deg,rgba(8,13,16,.55),transparent 22%)}
+.btn{letter-spacing:.02em;padding:16px 34px}
+.btn:hover{transform:translateY(-2px);box-shadow:0 0 0 1px rgba(255,255,255,.3) inset,0 16px 40px -10px rgba(47,240,220,.85)}
+.btn.ghost{background:rgba(255,255,255,.04);backdrop-filter:blur(6px);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.5)}
+section{padding:128px 0}
+h2{letter-spacing:.03em}
+.lead{font-size:18px;line-height:1.7}
+.services li{position:relative;overflow:hidden}
+.services li::before{content:"";position:absolute;left:0;top:18%;bottom:18%;width:3px;border-radius:3px;background:var(--teal);box-shadow:0 0 14px var(--teal);opacity:0;transition:opacity .3s}
+.services li:hover{transform:translateY(-3px)}
+.services li:hover::before{opacity:1}
+.services li{transition:border-color .3s,box-shadow .3s,transform .3s}
+.services strong{font-size:23px;letter-spacing:.01em}
+.price{font-size:42px}
+#agendar form{border-radius:32px;box-shadow:0 1px 0 rgba(255,255,255,.1) inset,0 50px 90px -40px #000,0 0 70px -40px rgba(47,240,220,.45)}
+legend{font:700 13px var(--b);letter-spacing:.18em;text-transform:uppercase;color:var(--teal);margin-bottom:12px}
+input[type=date]:focus,input[type=text]:focus,input[type=tel]:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 4px rgba(47,240,220,.15)}
+.opt span:hover{transform:translateY(-1px)}
+.cap strong{letter-spacing:.06em}
+.thumbs button:hover{opacity:.85}
+.arr:hover{box-shadow:0 0 18px -4px var(--teal)}
+footer{padding:88px 0 48px}
+.brand{font-size:32px;margin-bottom:48px}
+.info>div{padding-left:18px;border-left:2px solid rgba(47,240,220,.35)}
+.info h3{letter-spacing:.18em;text-transform:uppercase;font-size:13px}
+.info p{line-height:1.8}
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .8s,transform .8s}
+.reveal.in{opacity:1;transform:none}
+.dark .cgrid>div:first-child,.light .sleft,.book .grid>div:first-child{position:relative}
+@media(max-width:600px){
+ section{padding:72px 0}
+ .copy h1{font-size:clamp(58px,19vw,92px)}
+ .eyebrow{font-size:11px;letter-spacing:.22em}
+ .price{font-size:34px}
+ .info>div{padding-left:14px}
+}
+@media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}.links a::after,.services li{transition:none}}
