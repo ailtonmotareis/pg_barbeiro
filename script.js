@@ -1,158 +1,552 @@
-/* ===== Agendamento (horários compartilhados via planilha; veja servidor/PASSO-A-PASSO.txt) ===== */
-const WA="5511978698668";
-const API=""; // cole aqui a URL do Apps Script (termina em /exec)
-const SV=[["Corte",50,40],["Barba",40,30],["Corte + barba",80,70],["Acabamento",20,15]]; // nome, preço, minutos
-const $=id=>document.getElementById(id);
-const svc=$("svc"),sl=$("sl"),d=$("d"),pad=n=>String(n).padStart(2,"0");
-SV.forEach(([n,p])=>svc.insertAdjacentHTML("beforeend",`<label class="opt"><input type="radio" name="s" value="${n}"><span>${n}<b>R$ ${p}</b></span></label>`));
-const t0=new Date();d.min=`${t0.getFullYear()}-${pad(t0.getMonth()+1)}-${pad(t0.getDate())}`;
-const dur=n=>SV.find(x=>x[0]===n)[2],hm=m=>`${pad(Math.floor(m/60))}:${pad(m%60)}`,LS="om_agenda";
-const hit=(a,b,c,e)=>a<c+e&&c<a+b;
-const store={
- async busy(date){
-  if(API){const r=await fetch(`${API}?date=${date}`);return(await r.json()).busy||[]}
-  return(JSON.parse(localStorage.getItem(LS)||"{}"))[date]||[];
- },
- async book(b){
-  if(API){const r=await fetch(API,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(b)});return r.json()}
-  const a=JSON.parse(localStorage.getItem(LS)||"{}"),l=a[b.date]||[];
-  if(l.some(([s,u])=>hit(b.start,b.dur,s,u)))return{ok:false,error:"taken"};
-  l.push([b.start,b.dur]);a[b.date]=l;localStorage.setItem(LS,JSON.stringify(a));return{ok:true};
- }
-};
-let seq=0;
-async function slots(){
- const v=d.value,s=document.querySelector("input[name=s]:checked"),sm=$("sm"),me=++seq;
- sl.innerHTML="";$("dm").textContent="";
- if(!v){sm.textContent="Escolha um dia para ver os horários.";return}
- if(!s){sm.textContent="Escolha primeiro o serviço.";return}
- const [y,m,dd]=v.split("-").map(Number),dt=new Date(y,m-1,dd),w=dt.getDay();
- if(w===0||w===1){sm.textContent="Fechado neste dia. Escolha de terça a sábado.";return}
- sm.textContent="Verificando horários…";
- let busy;try{busy=await store.busy(v)}catch(e){if(me===seq)sm.textContent="Não consegui verificar os horários. Confira a internet e tente de novo.";return}
- if(me!==seq)return;
- const L=dur(s.value),end=(w===6?17:20)*60,now=new Date(),nm=now.getHours()*60+now.getMinutes(),same=dt.toDateString()===now.toDateString();
- let free=0,html="";
- for(let t=540;t+L<=end;t+=30){
-  if(same&&t<=nm)continue;
-  const off=busy.some(([bs,bu])=>hit(t,L,bs,bu));if(!off)free++;
-  html+=`<label class="opt"><input type="radio" name="h" value="${hm(t)}"${off?" disabled":""}><span>${hm(t)}</span></label>`;
- }
- sl.innerHTML=html;
- sm.textContent=free?"Horários riscados já estão reservados.":"Sem horários livres neste dia. Escolha outro dia.";
-}
-d.addEventListener("change",slots);svc.addEventListener("change",slots);
-document.addEventListener("visibilitychange",()=>{if(!document.hidden&&d.value)slots()});
-document.querySelectorAll(".mini").forEach(b=>b.addEventListener("click",()=>{
- document.querySelector(`input[name=s][value="${b.dataset.s}"]`).checked=true;
- $("agendar").scrollIntoView();slots();
-}));
-$("f").addEventListener("submit",async e=>{
- e.preventDefault();
- const s=document.querySelector("input[name=s]:checked"),h=document.querySelector("input[name=h]:checked"),n=$("n").value.trim(),t=$("t").value.trim(),err=$("e"),ok=$("ok"),btn=e.submitter||document.querySelector("#f .btn");
- err.textContent="";ok.hidden=true;
- if(!s)return err.textContent="Escolha um serviço.";
- if(!d.value)return err.textContent="Escolha o dia do atendimento.";
- if(!h)return err.textContent="Escolha um horário.";
- if(n.length<2)return err.textContent="Informe seu nome.";
- if(t.replace(/\D/g,"").length<10)return err.textContent="Informe um telefone com DDD.";
- const [hh,mm]=h.value.split(":").map(Number);
- btn.disabled=true;btn.textContent="Reservando…";
- let r;try{r=await store.book({date:d.value,start:hh*60+mm,dur:dur(s.value),time:h.value,service:s.value,name:n,phone:t})}catch(x){r={ok:false,error:"net"}}
- btn.disabled=false;btn.textContent="Enviar pedido de agendamento";
- if(!r.ok){err.textContent=r.error==="taken"?"Esse horário acabou de ser reservado por outra pessoa. Escolha outro.":"Não foi possível reservar agora. Tente de novo em instantes.";return slots()}
- const [y,m,dd]=d.value.split("-"),data=`${dd}/${m}/${y}`;
- const txt=`Olá, Os Malas Studio! Quero agendar: ${s.value}, dia ${data} às ${h.value}. Nome: ${n}. Telefone: ${t}.`;
- const url=`https://wa.me/${WA}?text=${encodeURIComponent(txt)}`;
- ok.hidden=false;
- ok.innerHTML=`<strong>Horário reservado: ${s.value}, ${data} às ${h.value}.</strong><p class="msg">Confirme no WhatsApp para a barbearia receber seu pedido.</p><a class="btn" href="${url}" target="_blank" rel="noopener">Confirmar no WhatsApp</a>${API?"":'<p class="msg">Modo teste: a reserva só fica salva neste aparelho.</p>'}`;
- slots();window.open(url,"_blank","noopener");
+/* ===== Agendamento ===== */
+
+const WA = "5511999999999";
+
+const SV = [
+    ["Corte", 50],
+    ["Barba", 40],
+    ["Corte + barba", 80],
+    ["Acabamento", 20],
+    ["Tatto", 250],
+    ["Piercing", 120]
+];
+
+const $ = id => document.getElementById(id);
+
+const svc = $("svc"),
+    sl = $("sl"),
+    d = $("d"),
+    barOpts = $("bar-opts");
+
+SV.forEach(([n, p], i) => {
+    svc.insertAdjacentHTML(
+        "beforeend",
+        `<label class="opt"><input type="radio" name="s" value="${n}"><span>${n}<b>R$ ${p}</b></span></label>`
+    );
 });
+
+const pad = n => String(n).padStart(2, "0");
+
+const today = new Date();
+
+d.min = `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}`;
+
+const max = new Date();
+max.setDate(max.getDate() + 60);
+
+d.max = `${max.getFullYear()}-${pad(max.getMonth() + 1)}-${pad(max.getDate())}`;
+
+// Barbeiros, turnos e limite vêm do servidor (server.js é a única fonte dessas regras)
+let CONFIG = {
+    barbeiros: ["Alexandre", "Luiz", "Matheus"],
+    turnos: [
+        { id: "manha", nome: "Manhã", inicio: "08:30", fim: "12:00" },
+        { id: "tarde", nome: "Tarde", inicio: "13:00", fim: "18:00" },
+        { id: "noite", nome: "Noite", inicio: "18:00", fim: "20:00" }
+    ],
+    limite: 10
+};
+
+const hhmm = t => {
+    const [h, m] = t.split(":").map(Number);
+    return h * 60 + m;
+};
+
+function renderBarbeiros() {
+    barOpts.innerHTML = "";
+    CONFIG.barbeiros.forEach(n =>
+        barOpts.insertAdjacentHTML(
+            "beforeend",
+            `<label class="opt"><input type="radio" name="b" value="${n}"><span>${n}</span></label>`
+        )
+    );
+}
+
+async function carregarConfig() {
+    try {
+        const resp = await fetch("/api/config");
+        if (resp.ok) CONFIG = await resp.json();
+    } catch (err) {
+        console.warn("Usando configuração padrão:", err);
+    }
+    renderBarbeiros();
+}
+
+carregarConfig();
+
+// Busca as vagas usadas de uma data (por barbeiro e turno)
+async function buscarVagas(data) {
+    try {
+        const resp = await fetch(`/api/agendamentos?data=${encodeURIComponent(data)}`);
+        const json = await resp.json();
+        return json.vagas || {};
+    } catch (err) {
+        console.warn("Não foi possível buscar as vagas:", err);
+        return {};
+    }
+}
+
+// Renderiza os turnos do barbeiro escolhido, mostrando quantas vagas restam
+async function slots() {
+    sl.innerHTML = "";
+
+    const v = d.value;
+    const barbeiro = document.querySelector("input[name=b]:checked")?.value;
+
+    if (!v || !barbeiro) {
+        $("sm").textContent = "Escolha o barbeiro e o dia para ver os turnos.";
+        return;
+    }
+
+    const [y, m, dd] = v.split("-").map(Number),
+        dt = new Date(y, m - 1, dd),
+        w = dt.getDay();
+    // variaveis dos dias fechados da semana
+    const firstDayClose = 0;
+    const secondDayClose = 1;
+
+    $("dm").textContent = "";
+
+    if (w === firstDayClose || w === secondDayClose) {
+        $("sm").textContent = "Fechado neste dia. Escolha de terça a sábado.";
+        return;
+    }
+
+    const vagas = await buscarVagas(v);
+    const agora = new Date();
+    const ehHoje = dt.toDateString() === agora.toDateString();
+    const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
+    let any = false;
+
+    for (const t of CONFIG.turnos) {
+        // Sábado: sem turno da noite (fecha às 18h)
+        if (w === 6 && t.id === "noite") continue;
+        // Turno de hoje que já terminou
+        if (ehHoje && hhmm(t.fim) <= minutosAgora) continue;
+
+        const restantes = vagas[barbeiro]?.[t.id]?.restantes ?? CONFIG.limite;
+        const lotado = restantes <= 0;
+        const info = lotado
+            ? "Lotado"
+            : `${restantes} ${restantes === 1 ? "vaga" : "vagas"}`;
+
+        if (!lotado) any = true;
+
+        sl.insertAdjacentHTML(
+            "beforeend",
+            `<label class="opt${lotado ? " ocupado" : ""}"><input type="radio" name="h" value="${t.id}" ${lotado ? "disabled" : ""}><span><span class="tn">${t.nome}<small>${t.inicio} às ${t.fim}</small></span><b>${info}</b></span></label>`
+        );
+    }
+
+    $("sm").textContent = any ? "" : "Sem vagas para este barbeiro neste dia. Escolha outro barbeiro ou outro dia.";
+}
+
+d.addEventListener("change", slots);
+barOpts.addEventListener("change", slots);
+
+document.querySelectorAll(".mini").forEach(b =>
+    b.addEventListener("click", () => {
+        document.querySelector(
+            `input[name=s][value="${b.dataset.s}"]`
+        ).checked = true;
+
+        $("agendar").scrollIntoView({ behavior: "smooth" });
+    })
+);
+
+$("f").addEventListener("submit", async e => {
+    e.preventDefault();
+
+    const s = document.querySelector("input[name=s]:checked"),
+        b = document.querySelector("input[name=b]:checked"),
+        h = document.querySelector("input[name=h]:checked"),
+        n = $("n").value.trim(),
+        t = $("t").value.trim();
+
+    const err = $("e");
+    const ok = $("ok");
+
+    err.textContent = "";
+    ok.hidden = true;
+
+    if (!s) return err.textContent = "Escolha um serviço.";
+    if (!b) return err.textContent = "Escolha o barbeiro.";
+    if (!d.value) return err.textContent = "Escolha o dia do atendimento.";
+    if (!h) return err.textContent = "Escolha um turno.";
+    if (n.length < 2) return err.textContent = "Informe seu nome.";
+    if (t.replace(/\D/g, "").length < 10) return err.textContent = "Informe um telefone com DDD.";
+
+    const [y, m, dd] = d.value.split("-");
+    const dataISO = `${y}-${m}-${dd}`;
+    const dataBR = `${dd}/${m}/${y}`;
+
+    const turno = CONFIG.turnos.find(t => t.id === h.value);
+    const turnoTxt = `${turno.nome} (${turno.inicio} às ${turno.fim})`;
+
+    const preco = SV.find(([nm]) => nm === s.value)[1];
+
+    // ===== SALVA NO BANCO (SQLite) IMEDIATAMENTE =====
+    try {
+        const resp = await fetch("/api/agendamentos", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                nome: n,
+                telefone: t,
+                servico: s.value,
+                preco: preco,
+                data: dataISO,
+                barbeiro: b.value,
+                turno: h.value
+            })
+        });
+
+        const result = await resp.json();
+
+        if (!resp.ok) {
+            err.textContent = result.error || "Não foi possível reservar este turno.";
+            slots();
+            return;
+        }
+
+        // ✅ Agendamento confirmado no banco!
+        const txt = `Olá, Akitas! Quero agendar: ${s.value}, dia ${dataBR} às ${h.value}. Nome: ${n}. Telefone: ${t}.`;
+
+        const url = `https://wa.me/${WA}?text=${encodeURIComponent(txt)}`;
+
+        ok.hidden = false;
+        ok.innerHTML = `
+            <strong>✅ Agendamento confirmado!</strong>
+            <p class="msg"><strong>Serviço:</strong> ${s.value}<br>
+            <strong>Barbeiro:</strong> ${b.value}<br>
+            <strong>Dia:</strong> ${dataBR}<br>
+            <strong>Turno:</strong> ${turnoTxt}<br>
+            <strong>Nome:</strong> ${n}<br>
+            <strong>Valor:</strong> R$ ${preco}</p>
+            <p class="msg">Sua vaga já está reservada no sistema. Chegue dentro do turno escolhido. Abra o WhatsApp para confirmar diretamente com a barbearia.</p>
+            <a class="btn" href="${url}" target="_blank" rel="noopener">Abrir WhatsApp</a>
+        `;
+
+        $("f").reset();
+        $("sl").innerHTML = "";
+        $("sm").textContent = "Escolha o barbeiro e o dia para ver os turnos.";
+        $("dm").textContent = "";
+
+        // Abre o WhatsApp após confirmar no banco
+        window.open(url, "_blank", "noopener");
+
+    } catch (ex) {
+        console.error("Erro ao salvar agendamento:", ex);
+        err.textContent = "Erro de conexão com o servidor. Tente novamente.";
+    }
+});
+
 
 /* ===== Vídeo de abertura: trava a rolagem, congela no último frame e desce sozinho ===== */
-(()=>{
-const root=document.documentElement,hero=document.querySelector(".hero"),v=document.getElementById("v"),prog=document.getElementById("prog"),skip=document.getElementById("skip"),start=document.getElementById("start");
-let finished=false;
-if("scrollRestoration" in history)history.scrollRestoration="manual";
-scrollTo(0,0);
-root.classList.add("locked");
-const locked=()=>root.classList.contains("locked");
-["wheel","touchmove"].forEach(n=>addEventListener(n,e=>{if(locked())e.preventDefault()},{passive:false}));
-addEventListener("keydown",e=>{if(locked()&&[" ","ArrowDown","ArrowUp","PageDown","PageUp","End","Home"].includes(e.key))e.preventDefault()});
-function finish(){
- if(finished)return;finished=true;
- hero.classList.add("done");prog.style.transform="scaleX(1)";
- try{v.pause()}catch(e){}
- setTimeout(()=>{
-  root.classList.remove("locked");
-  const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
-  document.getElementById("cortes").scrollIntoView({behavior:reduce?"auto":"smooth"});
- },1400);
-}
-v.addEventListener("timeupdate",()=>{if(v.duration&&!finished)prog.style.transform="scaleX("+(v.currentTime/v.duration)+")"});
-v.addEventListener("ended",finish);
-v.addEventListener("playing",()=>{start.hidden=true});
-v.addEventListener("error",()=>{finished=true;root.classList.remove("locked");hero.classList.add("done")});
-skip.addEventListener("click",()=>{if(v.duration)v.currentTime=Math.max(0,v.duration-.05);finish()});
-start.addEventListener("click",()=>{v.play()});
-v.play().catch(()=>{start.hidden=false});
+
+(() => {
+    const root = document.documentElement,
+        hero = document.querySelector(".hero"),
+        v = document.getElementById("v"),
+        prog = document.getElementById("prog"),
+        skip = document.getElementById("skip"),
+        start = document.getElementById("start");
+
+    let finished = false;
+
+    if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+
+    scrollTo(0, 0);
+    root.classList.add("locked");
+
+    const locked = () => root.classList.contains("locked");
+
+    ["wheel", "touchmove"].forEach(n =>
+        addEventListener(
+            n,
+            e => {
+                if (locked()) e.preventDefault();
+            },
+            { passive: false }
+        )
+    );
+
+    addEventListener("keydown", e => {
+        if (
+            locked() &&
+            [" ", "ArrowDown", "ArrowUp", "PageDown", "PageUp", "End", "Home"].includes(e.key)
+        ) e.preventDefault();
+    });
+
+    function finish() {
+        if (finished) return;
+
+        finished = true;
+
+        hero.classList.add("done");
+        prog.style.transform = "scaleX(1)";
+
+        try {
+            v.pause();
+        } catch (e) {}
+
+        // Libera a rolagem imediatamente; a animação do copy é controlada separadamente
+        root.classList.remove("locked");
+
+        const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+        document.getElementById("cortes").scrollIntoView({
+            behavior: reduce ? "auto" : "smooth"
+        });
+    }
+
+    v.addEventListener("timeupdate", () => {
+        if (v.duration && !finished) {
+            prog.style.transform = "scaleX(" + (v.currentTime / v.duration) + ")";
+        }
+    });
+
+    v.addEventListener("ended", finish);
+
+    v.addEventListener("playing", () => {
+        start.hidden = true;
+    });
+
+    v.addEventListener("error", () => {
+        finished = true;
+        root.classList.remove("locked");
+        hero.classList.add("done");
+    });
+
+    skip.addEventListener("click", () => {
+        if (v.duration) v.currentTime = Math.max(0, v.duration - .05);
+        finish();
+    });
+
+    start.addEventListener("click", () => {
+        v.play();
+    });
+
+    v.play().catch(() => {
+        start.hidden = false;
+    });
 })();
 
+
 /* ===== Cortes: arrastar para os lados controla o tempo do vídeo ===== */
-(()=>{
-const CUTS=["Afro com fade","Degradê preciso","Crop com fade","Tranças com desenho","Cornrows com fade","Platinado","Grisalho ondulado","Topete com risca"];
-const $=id=>document.getElementById(id),st=$("scrub"),v=$("cv"),bar=$("bar"),hint=$("hint"),cn=$("cn"),th=$("th");
-let cur=0,target=0,pos=0,vel=0,drag=false,lastX=0,lastT=0,touched=false;
-const clamp=x=>Math.min(1,Math.max(0,x));
-CUTS.forEach((n,i)=>th.insertAdjacentHTML("beforeend",`<button type="button" aria-label="${n}"><img src="img/cortes/corte-${i+1}.jpg" alt="" loading="lazy"></button>`));
-function load(i){
- cur=(i+CUTS.length)%CUTS.length;target=pos=vel=0;
- v.poster=`img/cortes/corte-${cur+1}-poster.jpg`;v.src=`video/cortes/corte-${cur+1}.mp4`;
- cn.textContent=CUTS[cur];
- [...th.children].forEach((b,k)=>b.setAttribute("aria-current",k===cur));
- const b=th.children[cur];th.scrollTo({left:b.offsetLeft-(th.clientWidth-b.offsetWidth)/2,behavior:"smooth"});
-}
-function tick(){
- if(!drag&&Math.abs(vel)>.0002){target=clamp(target+vel);vel*=.93;if(target<=0||target>=1)vel=0}
- pos+=(target-pos)*.35;if(Math.abs(target-pos)<.0004)pos=target;
- const t=pos*(v.duration||0);
- if(v.readyState>=2&&!v.seeking&&Math.abs(v.currentTime-t)>.01)v.currentTime=t;
- bar.style.transform=`scaleX(${pos})`;st.setAttribute("aria-valuenow",Math.round(pos*100));
- requestAnimationFrame(tick);
-}
-st.addEventListener("pointerdown",e=>{
- if(e.pointerType==="mouse"&&e.button)return;
- drag=true;vel=0;lastX=e.clientX;lastT=performance.now();st.setPointerCapture(e.pointerId);st.classList.add("on");
- if(!touched){touched=true;hint.classList.add("off");v.play().then(()=>v.pause()).catch(()=>{})}
-});
-st.addEventListener("pointermove",e=>{
- if(!drag)return;
- const f=(e.clientX-lastX)/(st.clientWidth*.85),n=performance.now();lastX=e.clientX;
- target=clamp(target+f);vel=.7*vel+.3*(f/Math.max(1,n-lastT)*16);lastT=n;
-});
-const end=()=>{if(!drag)return;drag=false;st.classList.remove("on");if(performance.now()-lastT>80)vel=0};
-["pointerup","pointercancel","lostpointercapture"].forEach(n=>st.addEventListener(n,end));
-st.addEventListener("wheel",e=>{
- if(Math.abs(e.deltaX)<=Math.abs(e.deltaY))return;
- e.preventDefault();touched=true;hint.classList.add("off");target=clamp(target-e.deltaX/(st.clientWidth*1.2));
-},{passive:false});
-st.addEventListener("keydown",e=>{
- const k={ArrowRight:.05,ArrowLeft:-.05}[e.key];
- if(k!==undefined){e.preventDefault();touched=true;hint.classList.add("off");target=clamp(target+k)}
-});
-$("prev").addEventListener("click",()=>load(cur-1));
-$("next").addEventListener("click",()=>load(cur+1));
-[...th.children].forEach((b,i)=>b.addEventListener("click",()=>load(i)));
-function nudge(){
- if(touched||matchMedia("(prefers-reduced-motion: reduce)").matches)return;
- const s=performance.now();
- (function f(n){const k=(n-s)/1600;if(touched||drag)return;if(k>=1){target=0;return}target=.22*Math.sin(Math.PI*k);requestAnimationFrame(f)})(s);
-}
-load(0);tick();
-if("IntersectionObserver"in window){
- new IntersectionObserver((en,o)=>{if(en[0].isIntersecting){v.preload="auto";v.load();o.disconnect()}},{rootMargin:"700px"}).observe(st);
- new IntersectionObserver((en,o)=>{if(en[0].isIntersecting){o.disconnect();v.readyState>=2?nudge():v.addEventListener("loadeddata",nudge,{once:true})}},{threshold:.6}).observe(st);
-}else{v.preload="auto";v.load()}
+
+(() => {
+    const CUTS = [
+        "Afro com fade",
+        "Degradê preciso",
+        "Crop com fade",
+        "Tranças com desenho",
+        "Cornrows com fade",
+        "Platinado",
+        "Grisalho ondulado",
+        "Topete com risca"
+    ];
+
+    const $ = id => document.getElementById(id),
+        st = $("scrub"),
+        v = $("cv"),
+        bar = $("bar"),
+        hint = $("hint"),
+        cn = $("cn"),
+        th = $("th");
+
+    let cur = 0,
+        target = 0,
+        pos = 0,
+        vel = 0,
+        drag = false,
+        lastX = 0,
+        lastT = 0,
+        touched = false;
+
+    const clamp = x => Math.min(1, Math.max(0, x));
+
+    CUTS.forEach((n, i) =>
+        th.insertAdjacentHTML(
+            "beforeend",
+            `<button type="button" aria-label="${n}"><img src="img/cortes/corte-${i + 1}.jpg" alt="" loading="lazy"></button>`
+        )
+    );
+
+    function load(i) {
+        cur = (i + CUTS.length) % CUTS.length;
+        target = pos = vel = 0;
+
+        v.poster = `img/cortes/corte-${cur + 1}-poster.jpg`;
+        v.src = `video/cortes/corte-${cur + 1}.mp4`;
+
+        cn.textContent = CUTS[cur];
+
+        [...th.children].forEach((b, k) =>
+            b.setAttribute("aria-current", k === cur)
+        );
+
+        const b = th.children[cur];
+
+        th.scrollTo({
+            left: b.offsetLeft - (th.clientWidth - b.offsetWidth) / 2,
+            behavior: "smooth"
+        });
+    }
+
+        function tick() {
+        if (!drag && Math.abs(vel) > .0002) {
+            target = clamp(target + vel);
+            vel *= .96; 
+            if (target <= 0 || target >= 1) vel = 0;
+        }
+
+        // A interpolação dita a suavidade, mas agora roda na velocidade do monitor (60hz, 120hz...)
+        pos += (target - pos) * .15; 
+
+        if (Math.abs(target - pos) < .0001) pos = target;
+
+        const t = pos * (v.duration || 0);
+
+        // Atualiza o frame o mais rápido que o navegador permitir
+        if (v.readyState >= 2 && !v.seeking && Math.abs(v.currentTime - t) > .01) {
+            v.currentTime = t;
+        }
+
+        bar.style.transform = `scaleX(${pos})`;
+        st.setAttribute("aria-valuenow", Math.round(pos * 100));
+
+        requestAnimationFrame(tick);
+    }
+
+    st.addEventListener("pointerdown", e => {
+        if (e.pointerType === "mouse" && e.button) return;
+
+        drag = true;
+        vel = 0;
+        lastX = e.clientX;
+        lastT = performance.now();
+
+        st.setPointerCapture(e.pointerId);
+        st.classList.add("on");
+
+        if (!touched) {
+            touched = true;
+            hint.classList.add("off");
+
+            v.play().then(() => v.pause()).catch(() => {});
+        }
+    });
+
+    st.addEventListener("pointermove", e => {
+        if (!drag) return;
+
+        // ALTERAÇÃO 3: Aumentei o divisor de .85 para 1.4. 
+        // Isso deixa o arrasto menos sensível, exigindo um movimento maior para girar o vídeo.
+        const f = (e.clientX - lastX) / (st.clientWidth * 1.4),
+            n = performance.now();
+
+        lastX = e.clientX;
+        target = clamp(target + f);
+
+        // Ajuste da velocidade para a inércia
+        vel = .8 * vel + .2 * (f / Math.max(1, n - lastT) * 16);
+        lastT = n;
+    });
+
+    const end = () => {
+        if (!drag) return;
+
+        drag = false;
+        st.classList.remove("on");
+
+        if (performance.now() - lastT > 80) vel = 0;
+    };
+
+    ["pointerup", "pointercancel", "lostpointercapture"].forEach(n =>
+        st.addEventListener(n, end)
+    );
+
+    st.addEventListener("wheel", e => {
+        if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
+
+        e.preventDefault();
+
+        touched = true;
+        hint.classList.add("off");
+
+        // Suavizado também no scroll do mouse
+        target = clamp(target - e.deltaX / (st.clientWidth * 1.8));
+    }, { passive: false });
+
+    st.addEventListener("keydown", e => {
+        const k = {
+            ArrowRight: .05,
+            ArrowLeft: -.05
+        }[e.key];
+
+        if (k !== undefined) {
+            e.preventDefault();
+
+            touched = true;
+            hint.classList.add("off");
+
+            target = clamp(target + k);
+        }
+    });
+
+    $("prev").addEventListener("click", () => load(cur - 1));
+    $("next").addEventListener("click", () => load(cur + 1));
+
+    [...th.children].forEach((b, i) =>
+        b.addEventListener("click", () => load(i))
+    );
+
+    function nudge() {
+        if (touched || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+        const s = performance.now();
+
+        (function f(n) {
+            const k = (n - s) / 1600;
+
+            if (touched || drag) return;
+            if (k >= 1) {
+                target = 0;
+                return;
+            }
+
+            target = .22 * Math.sin(Math.PI * k);
+            requestAnimationFrame(f);
+        })(s);
+    }
+
+    load(0);
+    tick();
+
+    if ("IntersectionObserver" in window) {
+        new IntersectionObserver((en, o) => {
+            if (en[0].isIntersecting) {
+                v.preload = "auto";
+                v.load();
+                o.disconnect();
+            }
+        }, { rootMargin: "700px" }).observe(st);
+
+        new IntersectionObserver((en, o) => {
+            if (en[0].isIntersecting) {
+                o.disconnect();
+
+                v.readyState >= 2
+                    ? nudge()
+                    : v.addEventListener("loadeddata", nudge, { once: true });
+            }
+        }, { threshold: .6 }).observe(st);
+
+    } else {
+        v.preload = "auto";
+        v.load();
+    }
 })();
 
 /* ===== Menu fixo: fundo ao rolar e link da seção atual ===== */
@@ -244,4 +638,42 @@ els.forEach(e=>e.classList.add("reveal"));
 if(!("IntersectionObserver"in window)){els.forEach(e=>e.classList.add("in"));return}
 const io=new IntersectionObserver(en=>en.forEach(x=>{if(x.isIntersecting){x.target.classList.add("in");io.unobserve(x.target)}}),{threshold:.12,rootMargin:"0px 0px -6% 0px"});
 els.forEach(e=>io.observe(e));
+})();
+
+
+/* ===== Barbeiro selecionado entra em cena (vídeo) ===== */
+(function () {
+    const stage = document.getElementById("stage");
+    if (!stage) return;
+    const norm = s => (s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+    const vids = [...stage.querySelectorAll(".barber")];
+    let atual = null;
+
+    function mostrar(nome) {
+        const alvo = vids.find(v => norm(v.dataset.b) === norm(nome)) || null;
+        if (alvo === atual) return;
+
+        // quem estava em cena sai suavemente e pausa depois da transição
+        if (atual) {
+            const saindo = atual;
+            saindo.classList.remove("on");
+            setTimeout(() => { if (!saindo.classList.contains("on")) saindo.pause(); }, 1000);
+        }
+
+        atual = alvo;
+        if (alvo) {
+            alvo.currentTime = 0;
+            const p = alvo.play();
+            if (p && p.catch) p.catch(() => {});
+            // força o navegador a registrar o estado inicial antes de animar a entrada
+            requestAnimationFrame(() => requestAnimationFrame(() => alvo.classList.add("on")));
+        }
+    }
+
+    document.getElementById("bar-opts").addEventListener("change", e => {
+        if (e.target.name === "b") mostrar(e.target.value);
+    });
+
+    // depois de enviar o formulário (reset), o barbeiro sai de cena
+    document.getElementById("f").addEventListener("reset", () => setTimeout(() => mostrar(null), 0));
 })();

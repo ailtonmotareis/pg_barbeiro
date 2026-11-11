@@ -1,0 +1,22 @@
+# Os Malas Studio — versão integrada
+
+Esta versão mantém a identidade e o conteúdo original do Os Malas Studio e incorpora o agendamento por barbeiro/turno e os vídeos dos barbeiros do projeto Akitas.
+
+## Como executar
+
+1. Instale o Node.js (versão LTS).
+2. Abra esta pasta no terminal.
+3. Execute `npm install`.
+4. Execute `npm start`.
+5. Acesse `http://localhost:3000`.
+
+O banco SQLite `agendamentos.db` é criado automaticamente na primeira execução. Não foi copiado o banco de dados de teste do projeto Akitas, para não misturar reservas de outro projeto.
+
+## Agendamento
+
+- Serviços e preços mantidos conforme o Os Malas Studio.
+- Barbeiros e turnos carregados pelo servidor.
+- Limite atual de 10 agendamentos por barbeiro em cada turno.
+- Os agendamentos ficam salvos no SQLite.
+
+**Importante:** antes de publicar, confira se os nomes dos barbeiros, os horários dos turnos e o limite de vagas estão corretos para a operação do Os Malas Studio. Essas configurações ficam no início de `server.js`.

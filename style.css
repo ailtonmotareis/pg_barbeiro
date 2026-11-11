@@ -270,3 +270,45 @@ footer{padding:88px 0 48px}
  .info>div{padding-left:14px}
 }
 @media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}.links a::after,.services li{transition:none}}
+
+/* ===== Horários ocupados (gerados pelo script do Akitas com a classe .ocupado) ===== */
+.opt.ocupado input{display:none}
+.opt.ocupado span{opacity:.28;text-decoration:line-through;cursor:not-allowed;background:transparent}
+.opt.ocupado span:hover{border-color:var(--line);transform:none}
+
+/* ===== Logo em uma linha no celular ===== */
+.logo span{white-space:nowrap}
+@media(max-width:400px){.logo{font-size:18px;gap:8px}.logo img{width:32px;height:32px}}
+
+/* ===== Turnos (manhã / tarde / noite) ===== */
+.opts.turnos{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.turnos .opt span{align-items:center}
+.turnos .tn{display:flex;flex-direction:column;gap:2px;padding:0;border:0;background:none;min-height:0;cursor:inherit}
+.turnos .tn small{color:var(--mut);font-weight:400}
+.turnos .opt b{font-size:13px;white-space:nowrap}
+.turnos .opt.ocupado span{text-decoration:none}
+.turnos .opt.ocupado .tn{text-decoration:line-through}
+
+/* ===== Barbeiros entrando ao selecionar o nome ===== */
+.stage{position:relative;height:clamp(340px,92vw,460px);margin-top:8px;overflow:hidden;pointer-events:none;-webkit-user-select:none;user-select:none}
+.barber{position:absolute;left:50%;bottom:0;height:100%;width:auto;aspect-ratio:7/8;max-width:none;object-fit:contain;
+ mix-blend-mode:screen;background:transparent;
+ opacity:0;visibility:hidden;transform:translate3d(-50%,38%,0) scale(.96);
+ transition:opacity .7s ease,transform .9s cubic-bezier(.22,1,.36,1),visibility 0s linear .9s;
+ will-change:transform,opacity;
+ -webkit-mask-image:radial-gradient(ellipse 52% 54% at 50% 46%,#000 58%,transparent 100%);
+ mask-image:radial-gradient(ellipse 52% 54% at 50% 46%,#000 58%,transparent 100%)}
+.barber.on{opacity:1;visibility:visible;transform:translate3d(-50%,0,0) scale(1);
+ transition:opacity .7s ease .12s,transform .95s cubic-bezier(.22,1,.36,1) .12s,visibility 0s}
+@media(min-width:860px){
+ .book .grid{row-gap:0}
+ .book .grid>form{grid-column:2;grid-row:1 / span 2}
+ .book .grid>div:first-child{grid-column:1;grid-row:1}
+ .stage{grid-column:1;grid-row:2;height:auto;min-height:440px;margin-top:24px}
+ .barber{height:min(100%,620px);transform:translate3d(-150%,0,0) scale(.97)}
+ .barber.on{transform:translate3d(-50%,0,0) scale(1)}
+}
+@media(prefers-reduced-motion:reduce){.barber,.barber.on{transition:opacity .3s,visibility 0s;transform:translate3d(-50%,0,0)}}
+
+/* o blend "screen" dos vídeos precisa enxergar o fundo real da página (textura + brilho) */
+#agendar{isolation:auto}

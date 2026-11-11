@@ -1,0 +1,24 @@
+{
+  "name": "os-malas-studio",
+  "version": "1.0.0",
+  "description": "Sistema de agendamento do Os Malas Studio com SQLite",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": [
+    "barbearia",
+    "agendamento",
+    "sqlite",
+    "nodejs",
+    "express"
+  ],
+  "author": "Grupo Akitas",
+  "license": "MIT",
+  "dependencies": {
+    "better-sqlite3": "^11.3.0",
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
+  }
+}
